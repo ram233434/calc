@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Генератор QR-кодов</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      background: #f0f0f0;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+    input {
+      width: 90%;
+      max-width: 400px;
+      font-size: 16px;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    #qrcode {
+      margin-top: 20px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      margin-top: 20px;
+      font-size: 16px;
+      padding: 10px 20px;
+      border: none;
+      background-color: #007BFF;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Создать QR-код</h1>
+  <input type="text" id="linkInput" placeholder="Введите ссылку...">
+  <div id="qrcode"></div>
+  <button id="downloadBtn">Скачать QR-код</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const linkInput = document.getElementById('linkInput');
+    const qrContainer = document.getElementById('qrcode');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let qr;
+
+    function generateQR(text) {
+      if (!text) {
+        qrContainer.innerHTML = '';
+        return;
+      }
+
+      let url = text.trim();
+
+      // Добавить https:// если нет
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      // Добавить / в конце, если нет
+      if (!/\/$/.test(url)) {
+        url += '/';
+      }
+
+      qrContainer.innerHTML = '';
+      qr = new QRCode(qrContainer, {
+        text: url,
+        width: 256,
+        height: 256,
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    linkInput.addEventListener('input', () => {
+      generateQR(linkInput.value);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      const img = qrContainer.querySelector('img');
+      if (!img) {
+        alert("Сначала введите ссылку для создания QR-кода.");
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = img.src;
+      a.download = 'qr-code.png';
+      a.click();
+    });
+  </script>
+
+</body>
+</html>

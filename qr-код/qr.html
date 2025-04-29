@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luxury QR-Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+</head>
+<body class="bg-gradient-to-br from-black via-gray-900 to-black min-h-screen flex items-center justify-center text-white font-sans p-6">
+
+  <div class="bg-white/10 backdrop-blur-2xl p-10 rounded-3xl shadow-2xl w-full max-w-3xl space-y-8 animate-fade-in">
+    <h1 class="text-5xl font-extrabold text-center tracking-tight mb-6">Создай роскошный QR</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="space-y-4">
+        <input id="link" type="text" placeholder="Вставь ссылку" class="w-full p-3 rounded-xl text-black text-sm focus:outline-none" />
+
+        <div>
+          <label class="block mb-1 text-sm">Тип точек:</label>
+          <select id="dotsType" class="w-full p-2 rounded-xl text-black">
+            <option value="rounded">Закругленные</option>
+            <option value="dots">Точки</option>
+            <option value="classy">Элегантные</option>
+            <option value="extra-rounded">Очень скругленные</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm">Тип глаз:</label>
+          <select id="eyeType" class="w-full p-2 rounded-xl text-black">
+            <option value="square">Квадратные</option>
+            <option value="circle">Круглые</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm">Градиент (от → до):</label>
+          <div class="flex space-x-2">
+            <input type="color" id="gradientStart" value="#FFD700" class="w-1/2 h-10 rounded-xl p-1">
+            <input type="color" id="gradientEnd" value="#FF8C00" class="w-1/2 h-10 rounded-xl p-1">
+          </div>
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm">Фон:</label>
+          <input type="color" id="bgColorPicker" value="#ffffff" class="w-full h-10 p-1 rounded-xl">
+        </div>
+
+        <div>
+          <label class="block mb-1 text-sm">Логотип:</label>
+          <input type="file" id="logoInput" accept="image/*" class="text-sm">
+        </div>
+
+        <div class="flex space-x-4 mt-6">
+          <button onclick="generateQR()" class="flex-1 bg-indigo-500 hover:bg-indigo-600 py-3 rounded-xl text-white font-bold transition-all">
+            Создать
+          </button>
+          <button onclick="downloadQR()" class="flex-1 bg-green-500 hover:bg-green-600 py-3 rounded-xl text-white font-bold transition-all">
+            Скачать
+          </button>
+        </div>
+      </div>
+
+      <div id="qrcode" class="flex items-center justify-center bg-white/5 rounded-2xl p-4"></div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 1s ease-out forwards;
+    }
+  </style>
+
+  <script>
+    let qrCode;
+
+    async function generateQR() {
+      const link = document.getElementById('link').value.trim();
+      const dotsType = document.getElementById('dotsType').value;
+      const eyeType = document.getElementById('eyeType').value;
+      const gradientStart = document.getElementById('gradientStart').value;
+      const gradientEnd = document.getElementById('gradientEnd').value;
+      const bgColor = document.getElementById('bgColorPicker').value;
+      const logoInput = document.getElementById('logoInput');
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = '';
+
+      if (!link) {
+        alert("Введите ссылку!");
+        return;
+      }
+
+      let imageUrl = '';
+      if (logoInput.files && logoInput.files[0]) {
+        imageUrl = await readFileAsDataURL(logoInput.files[0]);
+      }
+
+      qrCode = new QRCodeStyling({
+        width: 350,
+        height: 350,
+        data: link,
+        image: imageUrl || undefined,
+        dotsOptions: {
+          gradient: {
+            type: 'linear',
+            rotation: 0,
+            colorStops: [
+              { offset: 0, color: gradientStart },
+              { offset: 1, color: gradientEnd },
+            ],
+          },
+          type: dotsType,
+        },
+        cornersSquareOptions: {
+          type: eyeType,
+          color: gradientStart,
+        },
+        backgroundOptions: {
+          color: bgColor,
+        },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 5,
+          imageSize: 0.25
+        }
+      });
+
+      qrCode.append(qrContainer);
+    }
+
+    function downloadQR() {
+      if (!qrCode) {
+        alert("Сначала создай QR-код.");
+        return;
+      }
+      qrCode.download({ name: "luxury-qr-code", extension: "png" });
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>
